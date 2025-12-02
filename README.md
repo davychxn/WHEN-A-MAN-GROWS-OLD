@@ -3,11 +3,9 @@
 > ### _IT ENGINEER EDITION_
 
 <br/>
-<br/>
 
 ![LOGO OF THE REPO](./assets/Clipboard_12-02-2025_01.jpg)
 
-<br/>
 <br/>
 
 ## My Diaries
@@ -21,16 +19,11 @@
 <br/>
 <br/>
 <br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
 
 ![FOOTER OF THE REPO](./assets/roboneo_208216094873694.jpg)
+
+<br/>
+<br/>
 
 ## Translate Text In Images
 
@@ -51,3 +44,7 @@
 ### Images Copyrights Disclaimer
 
 Private Images in This Repository - All rights reserved. Unauthorized use, reproduction, or distribution is prohibited.
+
+<br/>
+<br/>
+<br/>
