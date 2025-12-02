@@ -1,10 +1,17 @@
 # WHEN A MAN GROWS OLD
 
-### IT ENGINEER EDITION
+### _IT ENGINEER EDITION_
+
+![LOGO OF THE REPO](./assets/Clipboard_12-02-2025_01.jpg)
 
 ## My Diaries
 
 [Book Of 2025](./notes/2025/)
+
+
+
+
+![FOOTER OF THE REPO](./assets/roboneo_208216094873694.jpg)
 
 ## Translate Text In Images
 
