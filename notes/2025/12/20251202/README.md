@@ -1,5 +1,5 @@
 # Forget To Shut Down AC?
-## Oublier d'eteindre la clim
+> ## Oublier d'eteindre la clim
 
 ![PICTURE OF THE DAY](./assets/IMG_20251202_101651.jpg)
 
@@ -16,6 +16,10 @@ Et ca fonctionne :).
 
 ![PICTURE OF THE DAY](./assets/MVIMG_20251130_085806.jpg)
 
+<br/>
+
 ### Images Copyrights Disclaimer
 
 Private Images in This Repository - All rights reserved. Unauthorized use, reproduction, or distribution is prohibited.
+
+<br/>
