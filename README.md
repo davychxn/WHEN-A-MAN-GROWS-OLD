@@ -11,6 +11,25 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ![FOOTER OF THE REPO](./assets/roboneo_208216094873694.jpg)
 
 ## Translate Text In Images
