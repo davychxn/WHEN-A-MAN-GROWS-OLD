@@ -1,6 +1,6 @@
-# WHEN A MAN GROWS OLD
+# WHEN A MAN GROWS OLD(当男人老了)
 
-> ### _IT ENGINEER EDITION_
+> ### - _IT ENGINEER EDITION_
 
 <br/>
 
@@ -8,7 +8,7 @@
 
 ## My Diaries
 
-[Book Of 2025](./notes/2025/)
+[_Book Of 2025_](./notes/2025/)
 
 <br/>
 <br/>
