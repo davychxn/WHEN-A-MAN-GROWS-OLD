@@ -14,7 +14,7 @@ Pourquoi avons-nous besoin d'innovation et que voulons-nous accomplir grace a l'
 
 Et j'avais besoin de masser ma plante timide ce matin.
 
-[![VIDEO OF THE DAY](./assets/p01.jpg)](./assets/v01.mp4)
+[![VIDEO OF THE DAY](./assets/p01.jpg)](https://www.youtube.com/shorts/5Lw2mFyGMSI)
 
 ![PICTURE OF THE DAY](./assets/p02.jpg)
 
