@@ -5,6 +5,8 @@
 
 [2, Mardi, 23 Degres, Brouillard](./12/20251202/)
 
+[4, Jeudi, 16 Degres, Nuageuse](./12/20251204/)
+
 <br/>
 
 ### Images Copyrights Disclaimer
