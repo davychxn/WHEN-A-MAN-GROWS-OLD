@@ -7,7 +7,7 @@
 
 ### 9 Decembre, 20 Degre, Ensoleille, Montagne du Savant, Canton, Chine
 
-```
+```text
 Je vois tres souvent des chats errer dans la ruelle devant ma fenetre et je sais que mon voisin, quelques plus loin, a un chien. Depuis l'approche de l'hiver, j'entends le chien de mon voisin freiner de plus en plus fort chaque jour. Parfois il entend desesperement.
 
 De l'autre cote, j'tendents des chats miauler dehors au milieu de la nuit, souvent en journee ou lorsque la circulation est encore dense. Alors je realise qu'il y a des guerres qui se deroulent sur notre voie, the turf wars !
