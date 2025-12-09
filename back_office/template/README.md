@@ -7,9 +7,7 @@
 
 ### <Date>, <Degree>, <Weather>, <Location>
 
-```text
 content
-```
 
 [![VIDEO OF THE DAY](./assets/v01.jpg)](https://youtube.com)
 

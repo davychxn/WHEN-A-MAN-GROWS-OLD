@@ -142,7 +142,7 @@ def copy_with_asset_filter(noting_area, dest_folder):
 
 
 def process_note_content_for_wrapping(readme_file):
-    """Process note README to add zero-width spaces for better text wrapping."""
+    """Process note README to convert code blocks to regular paragraphs for better wrapping and readability."""
     try:
         with open(readme_file, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -159,14 +159,16 @@ def process_note_content_for_wrapping(readme_file):
         before_content = content[:after_header_pos]
         after_content = content[after_header_pos:]
         
-        # Find ```text blocks and process them
+        # Convert ```text blocks to regular paragraphs with better formatting
         def process_text_block(match):
-            text = match.group(1)
-            # Add zero-width space after punctuation for better wrapping
-            fixed = re.sub(r'(?<=[.!?;:\-—])', '\u200b', text)
-            return f'```text\n{fixed}\n```'
+            text = match.group(1).strip()
+            # Split into paragraphs (separated by blank lines)
+            paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
+            # Join paragraphs with double newlines for markdown
+            formatted = '\n\n'.join(paragraphs)
+            return f'\n\n{formatted}\n'
         
-        # Replace all ```text...``` blocks with processed versions
+        # Replace all ```text...``` blocks with plain text paragraphs
         after_content = re.sub(r'```text\n(.*?)\n```', process_text_block, after_content, flags=re.DOTALL)
         
         # Write back the processed content
@@ -174,7 +176,7 @@ def process_note_content_for_wrapping(readme_file):
         with open(readme_file, 'w', encoding='utf-8') as f:
             f.write(new_content)
         
-        print("  Processed note content for text wrapping")
+        print("  Processed note content: removed code blocks for better wrapping")
     except Exception as e:
         print(f"Warning: Could not process note content: {e}")
 
