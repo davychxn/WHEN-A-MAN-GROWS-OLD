@@ -7,8 +7,6 @@
 
 [_4, Jeudi, 16 Degres, Nuageuse_](./12/20251204/)
 
-[_9, Mardi, 20 Degre, Ensoleille_](./12/20251209/)
-
 <br/>
 
 ### Images Copyrights Disclaimer
