@@ -141,46 +141,6 @@ def copy_with_asset_filter(noting_area, dest_folder):
     return copied_count
 
 
-def process_note_content_for_wrapping(readme_file):
-    """Process note README to convert code blocks to regular paragraphs for better wrapping and readability."""
-    try:
-        with open(readme_file, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        # Find the ### line (date/temperature/weather line)
-        header_pattern = r'###\s+.+?(?=\n)'
-        header_match = re.search(header_pattern, content)
-        
-        if not header_match:
-            return  # No header found, skip processing
-        
-        # Process content after the header
-        after_header_pos = header_match.end()
-        before_content = content[:after_header_pos]
-        after_content = content[after_header_pos:]
-        
-        # Convert ```text blocks to regular paragraphs with better formatting
-        def process_text_block(match):
-            text = match.group(1).strip()
-            # Split into paragraphs (separated by blank lines)
-            paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
-            # Join paragraphs with double newlines for markdown
-            formatted = '\n\n'.join(paragraphs)
-            return f'\n\n{formatted}\n'
-        
-        # Replace all ```text...``` blocks with plain text paragraphs
-        after_content = re.sub(r'```text\n(.*?)\n```', process_text_block, after_content, flags=re.DOTALL)
-        
-        # Write back the processed content
-        new_content = before_content + after_content
-        with open(readme_file, 'w', encoding='utf-8') as f:
-            f.write(new_content)
-        
-        print("  Processed note content: removed code blocks for better wrapping")
-    except Exception as e:
-        print(f"Warning: Could not process note content: {e}")
-
-
 
 def get_french_weekday(date):
     """Get French weekday name."""
@@ -317,12 +277,8 @@ def finish_note():
     # Copy contents from noting_area to new folder (with asset filtering)
     copy_with_asset_filter(noting_area, date_folder)
     
-    # Process note content for text wrapping
-    note_readme = date_folder / "README.md"
-    if note_readme.exists():
-        process_note_content_for_wrapping(note_readme)
-    
     # Extract weather and temperature from the note
+    note_readme = date_folder / "README.md"
     temperature, weather = extract_weather_from_note(note_readme) if note_readme.exists() else ("Inconnu", "Inconnu")
     print(f"Extracted temperature: {temperature}, weather: {weather}")
     
