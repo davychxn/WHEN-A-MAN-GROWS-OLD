@@ -1,29 +1,11 @@
-import os
 import shutil
+import sys
 from datetime import datetime
 from pathlib import Path
 
-
-def get_next_serial_number(drafts_folder, date_str):
-    """Get the next incremental serial number for the given date."""
-    existing_folders = [f for f in os.listdir(drafts_folder) 
-                       if os.path.isdir(os.path.join(drafts_folder, f)) 
-                       and f.startswith(date_str)]
-    
-    if not existing_folders:
-        return 1
-    
-    # Extract serial numbers from existing folders
-    serials = []
-    for folder in existing_folders:
-        try:
-            # Format: DATE_XXX where XXX is the serial number
-            serial = int(folder.split('_')[1])
-            serials.append(serial)
-        except (IndexError, ValueError):
-            continue
-    
-    return max(serials) + 1 if serials else 1
+# Add back_office/py to path for imports
+sys.path.insert(0, str(Path(__file__).parent / "back_office" / "py"))
+from file_filters import get_files_of_interest, get_next_serial_number
 
 
 def start_note():
@@ -40,8 +22,8 @@ def start_note():
     drafts_folder = base_dir / "back_office" / "drafts"
     template_folder = base_dir / "back_office" / "template"
     
-    # Check if noting_area has any contents
-    noting_area_contents = list(noting_area.iterdir())
+    # Check if noting_area has any contents (only README.md and assets folder)
+    noting_area_contents = get_files_of_interest(noting_area)
     
     if not noting_area_contents:
         print("noting_area is empty. Nothing to archive.")

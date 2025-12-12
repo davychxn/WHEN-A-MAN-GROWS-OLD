@@ -1,28 +1,41 @@
-import os
 import shutil
 import filecmp
-import re
+import sys
 from datetime import datetime
 from pathlib import Path
+
+# Add back_office/py to path for imports
+sys.path.insert(0, str(Path(__file__).parent / "back_office" / "py"))
+from file_filters import get_files_of_interest, get_next_serial_number
+from info_extraction import (
+    extract_weather_from_note,
+    extract_natural_info,
+    get_referenced_assets,
+    get_french_weekday,
+    get_french_month
+)
 
 
 def has_changes(noting_area, template_folder):
     """Check if noting_area has any changes compared to template."""
-    noting_files = set(os.listdir(noting_area))
-    template_files = set(os.listdir(template_folder))
+    # Only check files of interest
+    noting_files = {item.name for item in get_files_of_interest(noting_area)}
+    template_files = {item.name for item in get_files_of_interest(template_folder)}
     
     # If file lists differ, there are changes
     if noting_files != template_files:
         return True
     
-    # Compare file contents
-    for filename in noting_files:
-        noting_file = os.path.join(noting_area, filename)
-        template_file = os.path.join(template_folder, filename)
+    # Compare file contents for files of interest
+    for item in get_files_of_interest(noting_area):
+        noting_file = noting_area / item.name
+        template_file = template_folder / item.name
         
         # Skip if not both files
-        if not (os.path.isfile(noting_file) and os.path.isfile(template_file)):
-            return True
+        if not (noting_file.is_file() and template_file.is_file()):
+            if noting_file.is_file() != template_file.is_file():
+                return True
+            continue
         
         # Compare files
         if not filecmp.cmp(noting_file, template_file, shallow=False):
@@ -31,89 +44,19 @@ def has_changes(noting_area, template_folder):
     return False
 
 
-def get_next_backup_serial(backup_folder, date_str):
-    """Get the next incremental serial number for backup folder."""
-    if not os.path.exists(backup_folder):
-        return 1
-    
-    existing_folders = [f for f in os.listdir(backup_folder) 
-                       if os.path.isdir(os.path.join(backup_folder, f)) 
-                       and f.startswith(date_str)]
-    
-    if not existing_folders:
-        return 1
-    
-    serials = []
-    for folder in existing_folders:
-        try:
-            serial = int(folder.split('_')[1])
-            serials.append(serial)
-        except (IndexError, ValueError):
-            continue
-    
-    return max(serials) + 1 if serials else 1
-
-
-def extract_weather_from_note(note_file):
-    """Extract weather and temperature from the note file (line with ### after first image link)."""
-    try:
-        with open(note_file, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        # Find first image link
-        img_pattern = r'!\[.*?\]\(.*?\)'
-        img_match = re.search(img_pattern, content)
-        
-        if img_match:
-            # Find the ### line after the image
-            after_img = content[img_match.end():]
-            header_pattern = r'###\s+(.+)'
-            header_match = re.search(header_pattern, after_img)
-            
-            if header_match:
-                header_line = header_match.group(1).strip()
-                # Parse: Date, Temperature, Weather, Location
-                parts = [p.strip() for p in header_line.split(',')]
-                if len(parts) >= 3:
-                    temperature = parts[1]  # Temperature is the second part
-                    weather = parts[2]      # Weather is the third part
-                    return temperature, weather
-        
-        return "Inconnu", "Inconnu"
-    except Exception as e:
-        print(f"Warning: Could not extract weather/temperature: {e}")
-        return "Inconnu", "Inconnu"
-
-
-def get_referenced_assets(readme_file):
-    """Get list of asset files referenced in the README.md."""
-    try:
-        with open(readme_file, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        # Find all image and video references
-        # Pattern for ![...](./assets/filename) and [![...](./assets/filename)]
-        asset_pattern = r'!\[.*?\]\(./assets/([^)]+)\)'
-        matches = re.findall(asset_pattern, content)
-        
-        return set(matches)
-    except Exception as e:
-        print(f"Warning: Could not read README for asset references: {e}")
-        return set()
-
-
 def copy_with_asset_filter(noting_area, dest_folder):
-    """Copy contents from noting_area to dest_folder, filtering unreferenced assets."""
+    """Copy contents from noting_area to dest_folder, filtering unreferenced assets and only copying files of interest."""
     readme_file = noting_area / "README.md"
     referenced_assets = get_referenced_assets(readme_file) if readme_file.exists() else set()
     
     copied_count = 0
     skipped_count = 0
     
-    for item in noting_area.iterdir():
+    # Only copy files of interest (README.md and assets folder)
+    for item in get_files_of_interest(noting_area):
         dest = dest_folder / item.name
         
-        if item.name == "assets" and item.is_dir():
+        if item.name.lower() == "assets" and item.is_dir():
             # Handle assets folder with filtering
             dest.mkdir(exist_ok=True)
             for asset_file in item.iterdir():
@@ -139,41 +82,6 @@ def copy_with_asset_filter(noting_area, dest_folder):
         print(f"  Total skipped unreferenced assets: {skipped_count}")
     
     return copied_count
-
-
-
-def get_french_weekday(date):
-    """Get French weekday name."""
-    french_days = {
-        0: "Lundi",
-        1: "Mardi",
-        2: "Mercredi",
-        3: "Jeudi",
-        4: "Vendredi",
-        5: "Samedi",
-        6: "Dimanche"
-    }
-    return french_days[date.weekday()]
-
-
-def get_french_date(date):
-    """Get French date format without year (e.g., '2 Decembre')."""
-    french_months = {
-        1: "Janvier", 2: "Fevrier", 3: "Mars", 4: "Avril",
-        5: "Mai", 6: "Juin", 7: "Juillet", 8: "Aout",
-        9: "Septembre", 10: "Octobre", 11: "Novembre", 12: "Decembre"
-    }
-    return f"{date.day} {french_months[date.month]}"
-
-
-def get_french_month(month_num):
-    """Get French month name."""
-    french_months = {
-        1: "Janvier", 2: "Fevrier", 3: "Mars", 4: "Avril",
-        5: "Mai", 6: "Juin", 7: "Juillet", 8: "Aout",
-        9: "Septembre", 10: "Octobre", 11: "Novembre", 12: "Decembre"
-    }
-    return french_months[month_num]
 
 
 def update_year_readme(readme_path, new_note_link, date, temperature, weather):
@@ -277,10 +185,13 @@ def finish_note():
     # Copy contents from noting_area to new folder (with asset filtering)
     copy_with_asset_filter(noting_area, date_folder)
     
-    # Extract weather and temperature from the note
+    # Extract weather, temperature, and natural info from the note
     note_readme = date_folder / "README.md"
     temperature, weather = extract_weather_from_note(note_readme) if note_readme.exists() else ("Inconnu", "Inconnu")
+    natural_info = extract_natural_info(note_readme, max_length=40) if note_readme.exists() else "Information non disponible"
+    
     print(f"Extracted temperature: {temperature}, weather: {weather}")
+    print(f"Natural info: {natural_info}")
     
     # Clear noting_area
     for item in noting_area.iterdir():
@@ -291,7 +202,7 @@ def finish_note():
     print("Cleared noting_area")
     
     # Create backup folder: back_office/notes_backup/year_notes/DATE_XXX
-    backup_serial = get_next_backup_serial(backup_base, date_str)
+    backup_serial = get_next_serial_number(backup_base, date_str)
     backup_folder_name = f"{date_str}_{backup_serial:03d}"
     backup_folder = backup_base / backup_folder_name
     backup_folder.mkdir(parents=True, exist_ok=True)

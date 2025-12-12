@@ -1,27 +1,18 @@
-import os
 import shutil
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 
+# Add back_office/py to path for imports
+sys.path.insert(0, str(Path(__file__).parent / "back_office" / "py"))
+from file_filters import get_files_of_interest, get_next_serial_number, get_latest_folder_by_date
+
 
 def get_latest_note_folder(notes_base, year_str, month_str):
-    """Find the latest note folder for today or specified date."""
+    """Find the latest note folder for specified year and month."""
     month_folder = notes_base / year_str / month_str
-    
-    if not month_folder.exists():
-        return None
-    
-    # Get all date folders and sort them
-    date_folders = [f for f in month_folder.iterdir() if f.is_dir() and f.name.isdigit()]
-    
-    if not date_folders:
-        return None
-    
-    # Sort by name (YYYYMMDD format sorts correctly)
-    date_folders.sort(reverse=True)
-    
-    return date_folders[0]
+    return get_latest_folder_by_date(month_folder)
 
 
 def get_latest_backup_folder(backup_base):
@@ -38,30 +29,6 @@ def get_latest_backup_folder(backup_base):
     backup_folders.sort(reverse=True)
     
     return backup_folders[0]
-
-
-def get_next_serial_number(drafts_folder, date_str):
-    """Get the next incremental serial number for the given date."""
-    if not drafts_folder.exists():
-        return 1
-    
-    existing_folders = [f for f in drafts_folder.iterdir() 
-                       if f.is_dir() and f.name.startswith(date_str)]
-    
-    if not existing_folders:
-        return 1
-    
-    # Extract serial numbers from existing folders
-    serials = []
-    for folder in existing_folders:
-        try:
-            # Format: DATE_XXX where XXX is the serial number
-            serial = int(folder.name.split('_')[1])
-            serials.append(serial)
-        except (IndexError, ValueError):
-            continue
-    
-    return max(serials) + 1 if serials else 1
 
 
 def extract_note_link_from_readme(readme_path, date_folder_name):
@@ -182,8 +149,8 @@ def revert_note():
     month_str = now.strftime("%m")
     date_str = now.strftime("%Y%m%d")
     
-    # Step 1: Archive noting_area contents if anything there
-    noting_area_contents = list(noting_area.iterdir())
+    # Step 1: Archive noting_area contents if anything there (only files of interest)
+    noting_area_contents = get_files_of_interest(noting_area)
     
     if noting_area_contents:
         print(f"Found {len(noting_area_contents)} item(s) in noting_area. Archiving to drafts...")
@@ -196,7 +163,7 @@ def revert_note():
         draft_folder_path.mkdir(parents=True, exist_ok=True)
         print(f"Created draft folder: {draft_folder_name}")
         
-        # Copy contents to draft folder
+        # Copy contents to draft folder (only files of interest)
         for item in noting_area_contents:
             dest = draft_folder_path / item.name
             if item.is_file():
@@ -206,7 +173,7 @@ def revert_note():
                 shutil.copytree(item, dest)
                 print(f"  Archived directory: {item.name}")
         
-        # Clear noting_area
+        # Clear noting_area (only files of interest)
         for item in noting_area_contents:
             if item.is_file():
                 item.unlink()
@@ -221,17 +188,36 @@ def revert_note():
         print("No note found to revert.")
         return
     
+    # Check if the note is within 24 hours - only revert recent notes
+    try:
+        # Parse the date from the folder name (YYYYMMDD format)
+        note_date_str = latest_note.name
+        note_date = datetime.strptime(note_date_str, "%Y%m%d")
+        
+        # Calculate time difference
+        time_diff = now - note_date
+        
+        if time_diff.total_seconds() > 24 * 60 * 60:  # 24 hours in seconds
+            print(f"Latest note ({note_date_str}) is older than 24 hours.")
+            print("Only notes created within the last 24 hours can be reverted. Aborting.")
+            return
+    except ValueError:
+        print(f"Could not parse date from folder name: {latest_note.name}. Aborting.")
+        return
+    
     print(f"Found latest note: {latest_note.relative_to(base_dir)}")
     
-    # Step 3: Copy note contents back to noting_area
+    # Step 3: Copy note contents back to noting_area (only files of interest)
     for item in latest_note.iterdir():
-        dest = noting_area / item.name
-        if item.is_file():
-            shutil.copy2(item, dest)
-            print(f"  Restored: {item.name}")
-        elif item.is_dir():
-            shutil.copytree(item, dest)
-            print(f"  Restored directory: {item.name}")
+        # Only restore files of interest
+        if item.name.lower() == "readme.md" or item.name.lower() == "assets":
+            dest = noting_area / item.name
+            if item.is_file():
+                shutil.copy2(item, dest)
+                print(f"  Restored: {item.name}")
+            elif item.is_dir():
+                shutil.copytree(item, dest)
+                print(f"  Restored directory: {item.name}")
     
     # Step 4: Restore the year README from backup
     latest_backup = get_latest_backup_folder(backup_base)
