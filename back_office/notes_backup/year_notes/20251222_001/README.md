@@ -9,8 +9,6 @@
 
 [_9, Mardi, 20 Degre, Ensoleille_](./12/20251209/)
 
-[_22, Lundi, 25 Degres, Ensoleillee_](./12/20251222/)
-
 <br/>
 
 ### Images Copyrights Disclaimer
