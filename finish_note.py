@@ -84,6 +84,27 @@ def copy_with_asset_filter(noting_area, dest_folder):
     return copied_count
 
 
+def create_year_readme(readme_path, year):
+    """Create a new year README.md file."""
+    content = f"""# My Diaries Of {year}
+> ### _Mes Journaux De {year}_
+
+<br/>
+
+### Images Copyrights Disclaimer
+
+Private Images in This Repository - All rights reserved. Unauthorized use, reproduction, or distribution is prohibited.
+
+<br/>
+
+[GO TO PARENT](../../../../)
+
+"""
+    with open(readme_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    print(f"Created new year README for {year}")
+
+
 def update_year_readme(readme_path, new_note_link, date, temperature, weather):
     """Update the year's README.md with the new note link."""
     with open(readme_path, 'r', encoding='utf-8') as f:
@@ -215,13 +236,14 @@ def finish_note():
         shutil.copy2(year_readme, backup_readme)
         print(f"Backed up year README to: {backup_readme.relative_to(base_dir)}")
     
+    # Create year's README if it doesn't exist
+    if not year_readme.exists():
+        create_year_readme(year_readme, year_str)
+    
     # Update year's README with new note link
-    if year_readme.exists():
-        relative_link = f"./{month_str}/{date_str}/"
-        update_year_readme(year_readme, relative_link, now, temperature, weather)
-        print(f"Updated year README with new note link")
-    else:
-        print("Warning: Year README not found, skipping update")
+    relative_link = f"./{month_str}/{date_str}/"
+    update_year_readme(year_readme, relative_link, now, temperature, weather)
+    print(f"Updated year README with new note link")
     
     print("\n✅ Note finished and archived successfully!")
 

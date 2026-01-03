@@ -56,7 +56,7 @@ def start_note():
                 item.unlink()
             elif item.is_dir():
                 shutil.rmtree(item)
-        print("Cleared noting_area")
+        print("Cleared noting_area\n")
     
     # Copy template contents to noting_area
     template_contents = list(template_folder.iterdir())
@@ -67,7 +67,13 @@ def start_note():
         elif item.is_dir():
             shutil.copytree(item, dest)
     
-    print("\n✅ Good to go! Start writing your note for today.")
+    print("""
+✅ Good to go! Start writing your note for today.
+   To do:
+     1. Enter .\\noting_area\\ folder
+     2. Paste your pictures into .\\noting_area\\assets\\ folder
+     3. Write note
+          """)
 
 
 if __name__ == "__main__":
