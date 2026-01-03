@@ -10,6 +10,8 @@
 
 [_Book Of 2025_](./notes/2025/)
 
+[_Book Of 2026_](./notes/2026/)
+
 <br/>
 <br/>
 <br/>

@@ -105,6 +105,55 @@ Private Images in This Repository - All rights reserved. Unauthorized use, repro
     print(f"Created new year README for {year}")
 
 
+def update_root_readme_with_year(root_readme_path, year):
+    """Add a new year link to the root README.md."""
+    with open(root_readme_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # Find the "## My Diaries" section
+    diaries_header = "## My Diaries"
+    if diaries_header not in content:
+        print("Warning: Could not find 'My Diaries' section in root README")
+        return
+    
+    # Find position after the diaries header
+    header_pos = content.find(diaries_header)
+    next_line_pos = content.find('\n', header_pos) + 1
+    
+    # Find all existing year links
+    search_start = next_line_pos
+    # Find where diaries section ends (next <br/> or ##)
+    next_section_pos = content.find('\n<br/>', search_start)
+    if next_section_pos == -1:
+        next_section_pos = content.find('\n##', search_start)
+    if next_section_pos == -1:
+        next_section_pos = len(content)
+    
+    section_content = content[search_start:next_section_pos]
+    
+    # Find all year links
+    year_lines = [line for line in section_content.split('\n') if line.strip().startswith('[_Book Of')]
+    
+    if year_lines:
+        # Find position after the last year link
+        last_year_line = year_lines[-1]
+        last_year_pos = content.find(last_year_line, search_start)
+        insert_pos = content.find('\n', last_year_pos) + 1
+        
+        # Add new year link
+        new_year_link = f"\n[_Book Of {year}_](./notes/{year}/)\n"
+        content = content[:insert_pos] + new_year_link + content[insert_pos:]
+    else:
+        # No existing year links, add after header with blank line
+        new_year_link = f"\n[_Book Of {year}_](./notes/{year}/)\n"
+        content = content[:next_line_pos] + new_year_link + content[next_line_pos:]
+    
+    # Write back
+    with open(root_readme_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    print(f"Added 'Book Of {year}' link to root README")
+
+
 def update_year_readme(readme_path, new_note_link, date, temperature, weather):
     """Update the year's README.md with the new note link."""
     with open(readme_path, 'r', encoding='utf-8') as f:
@@ -222,19 +271,23 @@ def finish_note():
             shutil.rmtree(item)
     print("Cleared noting_area")
     
-    # Create backup folder: back_office/notes_backup/year_notes/DATE_XXX
-    backup_serial = get_next_serial_number(backup_base, date_str)
-    backup_folder_name = f"{date_str}_{backup_serial:03d}"
-    backup_folder = backup_base / backup_folder_name
-    backup_folder.mkdir(parents=True, exist_ok=True)
-    print(f"Created backup folder: {backup_folder.relative_to(base_dir)}")
-    
-    # Copy year's README to backup
+    # Check if year README exists before creating backup
     year_readme = year_folder / "README.md"
+    year_folder_is_new = not year_readme.exists()
+    
+    # Only create backup folder and copy if year README exists
     if year_readme.exists():
+        backup_serial = get_next_serial_number(backup_base, date_str)
+        backup_folder_name = f"{date_str}_{backup_serial:03d}"
+        backup_folder = backup_base / backup_folder_name
+        backup_folder.mkdir(parents=True, exist_ok=True)
+        print(f"Created backup folder: {backup_folder.relative_to(base_dir)}")
+        
         backup_readme = backup_folder / "README.md"
         shutil.copy2(year_readme, backup_readme)
         print(f"Backed up year README to: {backup_readme.relative_to(base_dir)}")
+    else:
+        print("No existing year README to backup (new year folder)")
     
     # Create year's README if it doesn't exist
     if not year_readme.exists():
@@ -244,6 +297,12 @@ def finish_note():
     relative_link = f"./{month_str}/{date_str}/"
     update_year_readme(year_readme, relative_link, now, temperature, weather)
     print(f"Updated year README with new note link")
+    
+    # If new year folder was created, update root README
+    if year_folder_is_new:
+        root_readme = base_dir / "README.md"
+        if root_readme.exists():
+            update_root_readme_with_year(root_readme, year_str)
     
     print("\n✅ Note finished and archived successfully!")
 
